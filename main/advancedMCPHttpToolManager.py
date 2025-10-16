@@ -11,7 +11,6 @@ from calculate import CalculatorTool
 from currentDateTool import CurrentDateTool
 from req_resp_obj import ToolResponse, QueryResponse
 
-
 class AdvancedMCPHttpToolManager:
     def __init__(self, api_key: str, base_url: str = None, tools_directory: str = "mcp_tools", max_iterations: int = 5,
                  headers: Dict[str, str] = None):
@@ -53,7 +52,7 @@ class AdvancedMCPHttpToolManager:
         print(f"🔧 本地工具: {list(self.local_tools.keys())}")
 
         # print(f"🔧 本地工具: {json.dumps(self.local_tools.values(), indent=4, ensure_ascii=False)}")
-        print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
+        # print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
 
     def load_tools_from_files(self) -> List[Dict[str, Any]]:
         """从文本文件加载MCP工具描述"""
@@ -336,10 +335,12 @@ class AdvancedMCPHttpToolManager:
         max_iterations = self.max_iterations
         prompt = [{
             "role": "system",
-            "content": """你是一个专业的选择题回答助手。请遵循以下指导原则：
-                       1. 根据问题和选项选择出正确答案
-                       2. 如果使用工具，请确保提供完整的参数
-                       3. 返回答案只返回选项，如A、B、C、D等
+            "content": """你是一个专业的选择题回答助手。请严格遵循以下要求：
+                        1. 根据问题和选项分析并选择正确答案
+                        2. 如果使用工具，请确保提供完整的参数
+                        3. **返回答案时只返回选项字母（如A、B、C、D），不要包含任何其他文字、数字或符号**
+                        4. **绝对不要返回选项内容或转换结果**
+                        5. 输出格式必须为单个大写字母
                        """
         }]
         self.conversation_history = []
@@ -430,18 +431,27 @@ class AdvancedMCPHttpToolManager:
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
 
-                    if function_name == "nl2sql_tool":
-                        function_args = {
-                            "question": question
-                        }
-
                     print(f"🛠️ 调用工具 [{function_name}]: {function_args}")
 
-                    # 调用工具
-                    tool_result = self.call_tool(function_name, function_args)
+                    if function_name == "nl2sql_tool":
+                        function_args = {
+                            "query": question
+                        }
+                        url = "http://localhost:18080/query"
+                        response = requests.post(url, json=function_args)
+                        tool_result = ToolResponse(success=True, result=response.json()["answer"],
+                                                   tool_name=function_name,duration=1.0)
+                        # {
+                        #     "success": True,
+                        #     "result": response.json()["answer"],
+                        #     "tool_name": function_name,
+                        #     "duration": 1.0
+                        # }
+                    else:
+                        # 调用工具
+                        tool_result = self.call_tool(function_name, function_args)
 
-                    print(tool_result)
-
+                    print(f"tool_result={tool_result}")
                     # 记录工具调用信息
                     tool_calls_info.append({
                         "tool_name": function_name,
