@@ -14,8 +14,8 @@ def post():
             "paper": "exam",
             "id": 1,
             "category": "选择题",
-            "question": "计算7+8/2+5",
-            "content": "选项：\\nA) 6  \\nB) 16 \\nC) 23 \\nD) 15"
+            "question": "计算7的平方加上9的开方减去13",
+            "content": "选项：\\nA) 6  \\nB) 50 \\nC) 52 \\nD) 15"
             }
     response = requests.post(url, json=data)
     print(response.text)

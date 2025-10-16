@@ -18,8 +18,8 @@ def load_test_data():
 
 
     for i in range(len(id_list)):
-        if i < 9:
-            continue
+        # if i < 9:
+        #     continue
         id = id_list[i]
         category = category_list[i]
         question = question_list[i]
