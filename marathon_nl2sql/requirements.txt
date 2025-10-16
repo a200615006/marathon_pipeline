@@ -1,0 +1,9 @@
+langchain
+langchain-openai
+langchain-community
+openai
+pandas
+pydantic
+fastapi
+uvicorn
+mysql-connector-python
