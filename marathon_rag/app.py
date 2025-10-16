@@ -17,6 +17,23 @@ from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
 import uvicorn
 from contextlib import asynccontextmanager
+import re
+
+def extract_option(response):
+    """
+    从LLM响应中提取选项字母（A-Z）
+    """
+    # 查找第一个单独的大写字母（A-Z）
+    match = re.search(r'\b([A-Z])\b', str(response))
+    if match:
+        return match.group(1)
+    
+    # 如果没找到，尝试查找任何大写字母
+    match = re.search(r'[A-Z]', str(response))
+    if match:
+        return match.group(0)
+    
+    return "C"
 
 # 基本配置
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +42,7 @@ log = logging.info  # 或者使用 logger
 app = FastAPI(title="RAG 查询服务", description="基于 Milvus 和 Llama Index 的 RAG 查询 API")
 
 class QueryRequest(BaseModel):
-    query: str
+    question: str
     content: str = None
 
 # 全局变量，用于存储加载的组件
@@ -137,7 +154,7 @@ async def query_endpoint(request: QueryRequest = Body(...)):
     try:
         log("🔍 正在查询...")
         if request.content is not None:
-            response = dynamic_query_engine_CHOICE.query(request.question + request.content)
+            response = extract_option(dynamic_query_engine_CHOICE.query(request.question + request.content))
         else:
             response = dynamic_query_engine_QA.query(request.question)
         
