@@ -1,0 +1,27 @@
+models:
+  embedding: "/root/autodl-tmp/Qwen3-Embedding-0.6B"
+  reranker: "/root/autodl-tmp/Qwen3-Reranker-4B"
+  llm: "Qwen/Qwen3-32B"
+
+api:
+  siliconflow_key: "sk-ionsbeieleeekwlstqotkyrmictdzshgnbaytavcudxkixcs"
+
+paths:
+  documents_dir: "./data"
+  milvus_dir: "./milvus_test"
+  milvus_db: "milvus_lite.db"
+  saved_nodes: "./saved_nodes"
+  milvus_storage: "./milvus_storage"
+  logs: "./logs/requests_log.txt"
+  pdf_model_path: "/root/autodl-tmp/docling_model"
+
+parameters:
+  chunk_size: 1024
+  chunk_overlap: 100
+  max_tokens: 8192
+  temperature: 0.1
+  batch_size: 20
+  max_length: 8192
+  if_ivfpq: 0
+  if_vllmReranker: 1
+  

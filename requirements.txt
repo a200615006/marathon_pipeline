@@ -1,0 +1,45 @@
+# Core dependencies
+torch==2.6.0 --extra-index-url https://download.pytorch.org/whl/cu124
+vllm==0.8.5
+transformers
+
+# LlamaIndex core and components
+llama-index
+llama-index-core
+llama-index-extractors-entity
+llama-index-vector-stores-milvus
+llama-index-embeddings-huggingface
+llama-index-llms-huggingface
+llama-index-llms-dashscope
+llama-index-retrievers-bm25
+llama-index-packs-fusion-retriever
+
+# Vector database
+pymilvus[milvus_lite]
+
+# Document processing
+unstructured[all-docs]
+jieba
+pymupdf
+docling==2.14.0
+
+# Utilities
+tabulate>=0.9.0
+tiktoken==0.8.0
+pyprojroot==0.3.0
+easyocr>=1.7.0
+
+# nl2sql
+langchain
+langchain-openai
+langchain-community
+openai
+pandas
+pydantic
+fastapi
+uvicorn
+mysql-connector-python
+
+# mcp
+python-multipart
+requests
