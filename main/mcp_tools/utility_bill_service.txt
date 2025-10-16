@@ -1,0 +1,9 @@
+name: utility_bill_service
+description: 根据户号、月份查询水费、电费、燃气费
+http_url: http://api.example.com:30000/api/utility-bill/monthly-bill
+http_method: GET
+parameters:
+householdId: 户号，如BJ001234567，必填参数
+month: 账单月份，格式YYYY-MM，必填参数
+utilityType: 账单类型，可选值：electricity-电费，water-水费，gas-燃气费，默认为electricity
+required: householdId,month

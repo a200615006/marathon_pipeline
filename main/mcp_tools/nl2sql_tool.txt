@@ -1,0 +1,44 @@
+name: nl2sql_tool
+description: >
+  该工具是一个自然语言到SQL查询的转换器（NL2SQL）。
+  用户可以用自然语言描述查询需求，工具将其转换为SQL语句，查询以下三张表的数据：
+
+  1. **交易流水表 (transaction_flow)**:
+     - transaction_id: 交易流水唯一标识
+     - merchant_id: 商户ID
+     - institution_id: 发起机构/支付机构ID
+     - account_id: 交易账户ID（付款方）
+     - counterparty_id: 对手方账户ID（收款方）
+     - transaction_amount: 交易金额（单位：元，人民币）
+     - transaction_type: 交易类型（如 PAYMENT, REFUND）
+     - transaction_time: 交易发生时间
+     - status: 交易状态（如 SUCCESS, FAILED）
+     - remark: 交易备注
+
+  2. **机构信息表 (institution_info)**:
+     - institution_id: 机构唯一标识
+     - institution_name: 机构名称
+     - institution_type: 机构类型（如 BANK, PAYMENT）
+     - license_no: 金融许可证号
+     - legal_entity: 法人代表
+     - contact_phone: 联系电话
+     - contact_email: 联系邮箱
+     - status: 机构状态（如 ACTIVE）
+     - create_time: 创建时间
+
+  3. **商户信息表 (merchant_info)**:
+     - merchant_id: 商户唯一标识
+     - merchant_name: 商户名称
+     - merchant_type: 商户类型（如 RETAIL, ONLINE）
+     - merchant_category: 商户类别码（MCC）
+     - legal_person: 法人姓名
+     - business_license: 营业执照号
+     - settlement_account: 结算账户ID
+     - status: 商户状态（如 ACTIVE）
+     - register_time: 注册时间
+
+  支持对上述表的单表查询或多表关联查询，关联关系如下：
+  - transaction_flow.merchant_id = merchant_info.merchant_id
+  - transaction_flow.institution_id = institution_info.institution_id
+parameters:
+  required: []

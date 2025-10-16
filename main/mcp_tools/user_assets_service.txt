@@ -1,0 +1,8 @@
+name: user_assets_service
+description: 根据用户ID查询用户名下的资产信息，包括信用卡资产和房产资产
+http_url: http://api.example.com:30000/api/user/assets
+http_method: GET
+parameters:
+customerId: 用户ID（身份证号），必填参数
+assetType: 资产类型，可选值：card-信用卡资产，household-房产资产，默认为card
+required: customerId

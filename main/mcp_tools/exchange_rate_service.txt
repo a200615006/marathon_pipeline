@@ -1,0 +1,9 @@
+name: exchange_rate_service
+description: 提供实时汇率查询和货币转换功能
+http_url: http://api.example.com:30000/api/exchange-rate
+http_method: GET
+parameters:
+fromCurrency: 源货币代码，必填参数，支持USD/CNY/EUR/JPY/GBP/KRW
+toCurrency: 目标货币代码，必填参数，支持USD/CNY/EUR/JPY/GBP/KRW
+amount: 转换金额，可选参数，默认为1
+required: fromCurrency,toCurrency

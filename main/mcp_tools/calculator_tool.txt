@@ -1,0 +1,5 @@
+name: calculator_tool
+description: 提供数学计算功能，支持基础运算和复杂计算
+parameters:
+expression: 数学表达式，必填参数，如(10+5)*2或sqrt(16)
+required: expression

@@ -1,0 +1,8 @@
+name: credit_card_service
+description: 查询指定信用卡的月度账单信息
+http_url: http://api.example.com:30000/api/credit-card/monthly-bill
+http_method: GET
+parameters:
+cardNumber: 信用卡号，必填参数
+month: 账单月份，格式YYYY-MM，必填参数
+required: cardNumber,month

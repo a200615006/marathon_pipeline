@@ -1,0 +1,5 @@
+name: current_date_tool
+description: 查询日期、星期、系统时间
+parameters:
+format: 日期格式，可选参数，如YYYY-MM-DD或YYYY-MM-DD HH:mm:ss
+required:
