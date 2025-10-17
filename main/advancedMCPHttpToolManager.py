@@ -9,7 +9,10 @@ from openai import OpenAI
 
 from calculate import CalculatorTool
 from currentDateTool import CurrentDateTool
+from nl2sql_call import Nl2sqlTool
 from req_resp_obj import ToolResponse, QueryResponse
+from config import MODEL_NAME,PROMPT_CHOICE, PROMPT_QA
+
 
 class AdvancedMCPHttpToolManager:
     def __init__(self, api_key: str, base_url: str = None, tools_directory: str = "mcp_tools", max_iterations: int = 5,
@@ -38,7 +41,7 @@ class AdvancedMCPHttpToolManager:
         self.local_tools = {
             "calculator_tool": CalculatorTool.calculate,
             "current_date_tool": CurrentDateTool.get_current_date,
-            "nl2sql_tool": CurrentDateTool.get_current_date
+            "nl2sql_tool": Nl2sqlTool.call
         }
 
         # 然后加载工具文件
@@ -52,7 +55,7 @@ class AdvancedMCPHttpToolManager:
         print(f"🔧 本地工具: {list(self.local_tools.keys())}")
 
         # print(f"🔧 本地工具: {json.dumps(self.local_tools.values(), indent=4, ensure_ascii=False)}")
-        # print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
+        print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
 
     def load_tools_from_files(self) -> List[Dict[str, Any]]:
         """从文本文件加载MCP工具描述"""
@@ -216,7 +219,7 @@ class AdvancedMCPHttpToolManager:
                     success = True
                     result_str = str(result)
 
-                print(f"✅ 本地工具调用成功 (耗时: {call_duration:.2f}s)")
+                print(f"✅ 工具调用成功 (耗时: {call_duration:.2f}s)")
                 return ToolResponse(
                     success=success,
                     result=result_str,
@@ -333,22 +336,13 @@ class AdvancedMCPHttpToolManager:
         Returns: QueryResponse: 处理结果
         """
         max_iterations = self.max_iterations
-        prompt = [{
-            "role": "system",
-            "content": """你是一个专业的选择题回答助手。请严格遵循以下要求：
-                        1. 根据问题和选项分析并选择正确答案
-                        2. 如果使用工具，请确保提供完整的参数
-                        3. **返回答案时只返回选项字母（如A、B、C、D），不要包含任何其他文字、数字或符号**
-                        4. **绝对不要返回选项内容或转换结果**
-                        5. 输出格式必须为单个大写字母
-                       """
-        }]
+
         self.conversation_history = []
 
         if content:
-            messages = self.conversation_history + prompt + [{"role": "user", "content": question + " \n" + content}]
+            messages = self.conversation_history + PROMPT_CHOICE + [{"role": "user", "content": question + " \n" + content}]
         else:
-            messages = self.conversation_history + [{"role": "user", "content": question}]
+            messages = self.conversation_history + PROMPT_QA + [{"role": "user", "content": question}]
         # print(f"messages={messages} | question={question}")
 
         iteration_count = 0
@@ -368,7 +362,7 @@ class AdvancedMCPHttpToolManager:
                 print(f"iteration_count={iteration_count} | messages={messages} | question={question}")
 
                 response = self.client.chat.completions.create(
-                    model="qwen3-32b",
+                    model=MODEL_NAME,
                     messages=messages,
                     tools=available_tools if available_tools else None,
                     tool_choice="auto" if available_tools else "none",
@@ -412,17 +406,6 @@ class AdvancedMCPHttpToolManager:
                 # 处理工具调用
                 tool_call_count += 1
 
-                # 检查是否应该继续迭代
-                if tool_call_count > max_iterations:
-                    print("⚠️ 达到最大工具调用次数，生成最终回复")
-                    return QueryResponse(
-                        code="1",
-                        success=True,
-                        response=final_reply,
-                        tool_calls=tool_calls_info,
-                        total_iterations=iteration_count
-                    )
-
                 print(f"🔧 (第{tool_call_count} 轮工具调用）| 模型决定调用 {len(tool_calls)} 个工具")
                 messages.append(response_message)
 
@@ -437,19 +420,16 @@ class AdvancedMCPHttpToolManager:
                         function_args = {
                             "query": question
                         }
-                        url = "http://localhost:18080/query"
-                        response = requests.post(url, json=function_args)
-                        tool_result = ToolResponse(success=True, result=response.json()["answer"],
-                                                   tool_name=function_name,duration=1.0)
-                        # {
-                        #     "success": True,
-                        #     "result": response.json()["answer"],
-                        #     "tool_name": function_name,
-                        #     "duration": 1.0
-                        # }
-                    else:
-                        # 调用工具
                         tool_result = self.call_tool(function_name, function_args)
+                        return QueryResponse(
+                            code="0",
+                            success=True,
+                            response=tool_result.result,
+                            tool_calls=tool_calls_info,
+                            total_iterations=iteration_count
+                        )
+
+                    tool_result = self.call_tool(function_name, function_args)
 
                     print(f"tool_result={tool_result}")
                     # 记录工具调用信息
@@ -481,9 +461,9 @@ class AdvancedMCPHttpToolManager:
 
         # 生成最终回复
         try:
-            print(f"iteration_count={iteration_count} | messages={messages} | question={question}")
+            print(f"final | iteration_count={iteration_count} | messages={messages} | question={question}")
             final_response = self.client.chat.completions.create(
-                model="qwen3-32b",
+                model=MODEL_NAME,
                 messages=messages,
                 timeout=30.0,
                 extra_body={

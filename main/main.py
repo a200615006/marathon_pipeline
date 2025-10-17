@@ -1,21 +1,28 @@
+import time
 from contextlib import asynccontextmanager
 
 import os
 from datetime import datetime, date
 from fastapi import FastAPI, HTTPException, Query, Body
-from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from advancedMCPHttpToolManager import AdvancedMCPHttpToolManager
+from config import MAX_MCP_CALL, EXAM_PORT, TEST_PORT, OPENAI_API_KEY, OPENAI_API_BASE, MCP_DIRECTORY, X_App_Id, \
+    X_App_Key, MAIN_LOG_FILE
+from rag_call import RagTool
 from req_resp_obj import ToolResponse, ToolRequest, QueryResponse, UserQuery, ChoiceQuestionResponse, ChoiceQuestionRequest, QAQuestionRequest, QAQuestionResponse
 import logging
 
 
 # 配置日志
 logging.basicConfig(
+    filename=MAIN_LOG_FILE,
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filemode='a'
 )
 logger = logging.getLogger(__name__)
+# 测试日志
+logger.info("=== 应用程序启动 ===")
 
 
 @asynccontextmanager
@@ -24,13 +31,13 @@ async def lifespan(app: FastAPI):
     # 启动时初始化
     global tool_manager
     tool_manager = AdvancedMCPHttpToolManager(
-        api_key=os.getenv("DASHSCOPE_API_KEY"),
-        base_url=os.getenv("DASHSCOPE_URL"),
-        tools_directory="mcp_tools",
-        max_iterations=5,
+        api_key=OPENAI_API_KEY,
+        base_url=OPENAI_API_BASE,
+        tools_directory=MCP_DIRECTORY,
+        max_iterations=MAX_MCP_CALL,
         headers={
-            "X-App-Id": os.getenv("your_app_id"),
-            "X-App-Key": os.getenv("your_app_key"),
+            "X-App-Id": X_App_Id,
+            "X-App-Key": X_App_Key,
             "Content-Type": "application/json"
         }
     )
@@ -58,13 +65,16 @@ def process_choice_question(question: str, content: str) -> str:
     """
 
     try:
-        result = tool_manager.process_user_query(question,  content or "")
+        result = tool_manager.process_user_query(question,  content)
         if result.code == "1":
-            pass
-            # todo rag
-        print(result)
-        print(result.response)
-        return result.response
+            rag = RagTool.call(question, content)
+            print(f"rag_result={rag}")
+            result = rag["result"]
+            return result
+        else:
+            print(result)
+            print(result.response)
+            return result.response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"查询处理失败: {str(e)}")
 
@@ -86,11 +96,12 @@ async def exam(request: ChoiceQuestionRequest):
     接收问题并返回答案
     """
     try:
+        call_start = time.time()
         logger.info(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         logger.info(f"question: {request.question}，content: {request.content}")
 
-        answer = process_choice_question(request.question, request.content or "")
+        answer = process_choice_question(request.question, request.content)
 
         # 构建响应
         response = ChoiceQuestionResponse(
@@ -101,6 +112,7 @@ async def exam(request: ChoiceQuestionRequest):
         )
 
         logger.info(f"返回答案: {response}")
+        logger.info(f"cost={time.time()-call_start:.2f}s")
         return response
 
     except Exception as e:
@@ -108,9 +120,9 @@ async def exam(request: ChoiceQuestionRequest):
         raise HTTPException(status_code=500, detail=f"处理请求时发生错误: {str(e)}")
 
 
+    """健康检查端点"""
 @app.get("/health")
 async def health_check():
-    """健康检查端点"""
     return {
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
@@ -123,7 +135,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=10002,
+        port=EXAM_PORT,
         log_level="info",
         workers=1
     )
