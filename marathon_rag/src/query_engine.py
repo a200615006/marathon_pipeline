@@ -13,11 +13,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 log = logging.info  # 或者使用 logger
 text_qa_template_str_QA = (
-    "上下文信息如下：\n"
-    "{context_str}\n"
-    "基于提供的上下文，用中文直接回答查询，答案只能从上下文知识中获取，不要自己发挥，若上下文中没有相关答案，则严格回答“根据已有知识无法回答”。\n"
-    "查询：{query_str}\n"
-    "回答："
+"你是一个仅依据给定上下文作答的助手。\n"
+"上下文：\n{context_str}\n"
+"要求：\n"
+"1) 只使用上下文信息作答，不引入外部知识；\n"
+"2) 回答尽量简洁清晰，优先≤300字符（上限≤1000字符），不加前后缀；\n"
+"3) 优先使用与上下文一致的术语、数值与单位；优先给出与问题最匹配的原句或等价改写，避免冗余；\n"
+"4) 如上下文无关或缺失答案，严格答：“根据已有知识无法回答”。\n"
+"问题：{query_str}\n"
+"回答："
 )
 text_qa_template_QA = PromptTemplate(text_qa_template_str_QA)
 

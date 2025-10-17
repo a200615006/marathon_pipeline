@@ -17,6 +17,35 @@ from fastapi import FastAPI, HTTPException, Body
 from pydantic import BaseModel
 import uvicorn
 from contextlib import asynccontextmanager
+import re
+
+def extract_option(response):
+    """
+    从LLM响应中提取选项字母（A-Z，a-z）
+    优先匹配大写字母，再匹配小写字母；每种类型内先匹配单独字母，再匹配任意字母
+    """
+    # 第一步：优先匹配单独的大写字母（A-Z）
+    match = re.search(r'\b([A-Z])\b', str(response))
+    if match:
+        return match.group(1)
+    
+    # 第二步：若第一步失败，匹配任意大写字母（A-Z）
+    match = re.search(r'[A-Z]', str(response))
+    if match:
+        return match.group(0)
+    
+    # 第三步：若大写字母未找到，匹配单独的小写字母（a-z）
+    match = re.search(r'\b([a-z])\b', str(response))
+    if match:
+        return match.group(1)
+    
+    # 第四步：若第三步失败，匹配任意小写字母（a-z）
+    match = re.search(r'[a-z]', str(response))
+    if match:
+        return match.group(0)
+    
+    # 兜底：若所有字母均未找到，返回原始响应字符串
+    return str(response)
 
 # 基本配置
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +54,7 @@ log = logging.info  # 或者使用 logger
 app = FastAPI(title="RAG 查询服务", description="基于 Milvus 和 Llama Index 的 RAG 查询 API")
 
 class QueryRequest(BaseModel):
-    query: str
+    question: str
     content: str = None
 
 # 全局变量，用于存储加载的组件
@@ -137,7 +166,7 @@ async def query_endpoint(request: QueryRequest = Body(...)):
     try:
         log("🔍 正在查询...")
         if request.content is not None:
-            response = dynamic_query_engine_CHOICE.query(request.question + request.content)
+            response = extract_option(dynamic_query_engine_CHOICE.query(request.question + request.content))
         else:
             response = dynamic_query_engine_QA.query(request.question)
         

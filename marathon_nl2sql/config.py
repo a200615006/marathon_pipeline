@@ -3,8 +3,8 @@ OPENAI_API_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 MODEL_NAME = "qwen3-max"
 TEMPERATURE = 0
 
-DATABASE_URI = "sqlite:///business.db"
-MYSQL_DATABASE_URI = "mysql+mysqlconnector://your_username:your_password@localhost:3306/your_database"
+#DATABASE_URI = "sqlite:///business.db"
+DATABASE_URI = "mysql+pymysql://chen:password@localhost:3306/marathon"
 TABLE_DESCRIPTIONS_CSV = "database_table_descriptions.csv"
 
 LOG_FILE = "nl2sql.log"
