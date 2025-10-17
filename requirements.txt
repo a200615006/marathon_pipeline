@@ -39,6 +39,7 @@ pydantic
 fastapi
 uvicorn
 mysql-connector-python
+pymysql
 
 # mcp
 python-multipart
