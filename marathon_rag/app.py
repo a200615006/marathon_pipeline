@@ -21,19 +21,31 @@ import re
 
 def extract_option(response):
     """
-    从LLM响应中提取选项字母（A-Z）
+    从LLM响应中提取选项字母（A-Z，a-z）
+    优先匹配大写字母，再匹配小写字母；每种类型内先匹配单独字母，再匹配任意字母
     """
-    # 查找第一个单独的大写字母（A-Z）
+    # 第一步：优先匹配单独的大写字母（A-Z）
     match = re.search(r'\b([A-Z])\b', str(response))
     if match:
         return match.group(1)
     
-    # 如果没找到，尝试查找任何大写字母
+    # 第二步：若第一步失败，匹配任意大写字母（A-Z）
     match = re.search(r'[A-Z]', str(response))
     if match:
         return match.group(0)
     
-    return "C"
+    # 第三步：若大写字母未找到，匹配单独的小写字母（a-z）
+    match = re.search(r'\b([a-z])\b', str(response))
+    if match:
+        return match.group(1)
+    
+    # 第四步：若第三步失败，匹配任意小写字母（a-z）
+    match = re.search(r'[a-z]', str(response))
+    if match:
+        return match.group(0)
+    
+    # 兜底：若所有字母均未找到，返回原始响应字符串
+    return str(response)
 
 # 基本配置
 logging.basicConfig(level=logging.INFO)
