@@ -41,12 +41,11 @@ execute_query = QuerySQLDataBaseTool(db=db)
 
 # 回答prompt
 answer_prompt = PromptTemplate.from_template(
-    """给定以下用户问题、对应的SQL查询和SQL结果，请回答用户问题。
-
-    问题: {question}
-    SQL 查询: {query}
-    SQL 结果: {result}
-    答案: """
+    """ 请根据以下用户问题、对应的 SQL 查询及 SQL 结果回答用户问题，且需严格遵循格式要求：
+    若为统计结果或单列信息，返回字符串；
+    若 SQL 结果为一行数据，返回一维python数组，类似[]；
+    若 SQL 结果为多行数据，返回二维python数组，类似[[],[]]。
+    问题: {question}SQL 查询: {query}SQL 结果: {result}答案: """
 )
 
 rephrase_answer = answer_prompt | llm | StrOutputParser()

@@ -1,0 +1,14 @@
+curl -X POST "http://localhost:28080/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "中国银联无跳转支付产品的特点是是什么"
+  }'
+
+
+nohup python pdf2md.py > pdf2md.log 2>&1 &
+
+nohup python build_database.py > build_database.log 2>&1 &
+
+nohup python app.py > app.log 2>&1 &
+
+56681 1018 19:11
