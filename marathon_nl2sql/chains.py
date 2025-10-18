@@ -42,10 +42,11 @@ execute_query = QuerySQLDataBaseTool(db=db)
 # 回答prompt
 answer_prompt = PromptTemplate.from_template(
     """ 请根据以下用户问题、对应的 SQL 查询及 SQL 结果回答用户问题，且需严格遵循格式要求：
-    若查询不到结果，返回 “无结果”；
+    严格遵循，若查询不到结果（SQL 结果为空、空字符串或空列表），直接返回 “无结果”，绝对不允许自己造数据或生成任何虚假内容；
     若为统计结果或单列信息，返回字符串；
     若 SQL 结果为一行数据，返回一维python数组，类似[]；
     若 SQL 结果为多行数据，返回二维python数组，类似[[],[]]。
+    注意：如果 SQL 结果为空，必须返回 “无结果”。例如，如果结果是 '' 或 []，则输出 “无结果”。不要推测或添加任何额外数据。
     问题: {question}SQL 查询: {query}SQL 结果: {result}答案: """
 )
 
@@ -56,8 +57,15 @@ examples = [
     {
         "input": "Get the highest payment amount made by any customer.",
         "query": "SELECT MAX(amount) FROM payments;"
+    },
+    {
+    "input": "一个无结果的查询示例",
+    "query": "SELECT * FROM table WHERE condition=false;",
+    "result": "",
+    "answer": "无结果"
     }
 ]
+
 
 # Few-shot prompt
 example_prompt = ChatPromptTemplate.from_messages(
@@ -128,6 +136,7 @@ def create_nl2sql_chain():
             start_time = time.time()
             output = func(input)
             end_time = time.time()
+            logger.info(f"{step_name} 生成的答案: {output}")
             logger.info(f"{step_name} 完成，耗时: {end_time - start_time:.4f} 秒")
             return output
         return wrapper
@@ -135,14 +144,36 @@ def create_nl2sql_chain():
     chain = (
             RunnablePassthrough.assign(table_names_to_use=select_table) |
             RunnablePassthrough.assign(query=generate_query | RunnableLambda(clean_sql_query)) |
-            RunnablePassthrough.assign(result=itemgetter("query") | execute_query)
+            #RunnablePassthrough.assign(result=itemgetter("query") | execute_query)
+            RunnablePassthrough.assign(result=RunnableLambda(itemgetter("query")) |
+                                       RunnableLambda(log_step("execute_query", execute_query)))
     )
 
 
 
-    final_chain = chain | (lambda output: {
+    # final_chain = chain | (lambda output: {
+    #     "sql_query": output["query"],
+    #     "answer": rephrase_answer.invoke({
+    #         "question": output["question"],
+    #         "query": output["query"],
+    #         "result": output["result"]
+    #     })
+    # })
+
+    # final_chain = chain | (lambda output: {
+    #     "sql_query": output["query"],
+    #     "answer": ("无结果" if not output.get("result") or output["result"].strip() == "" 
+    #                else log_step("rephrase_answer", rephrase_answer.invoke)({
+    #                    "question": output["question"],
+    #                    "query": output["query"],
+    #                    "result": output["result"]
+    #                })
+    #               )
+    # })
+
+    final_chain = chain | RunnableLambda(lambda output: {
         "sql_query": output["query"],
-        "answer": rephrase_answer.invoke({
+        "answer": log_step("rephrase_answer", rephrase_answer.invoke)({
             "question": output["question"],
             "query": output["query"],
             "result": output["result"]
