@@ -97,9 +97,13 @@ async def exam(request: ChoiceQuestionRequest):
     """
     try:
         call_start = time.time()
+        print(f"\n##############################################################")
         logger.info(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         logger.info(f"question: {request.question}，content: {request.content}")
+
+        print(f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
+        print(f"question: {request.question}，content: {request.content}")
 
         answer = process_choice_question(request.question, request.content)
 
@@ -137,5 +141,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=EXAM_PORT,
         log_level="info",
-        workers=1
+        workers=1,
+        timeout_keep_alive=120  # 设置超时时间为120秒
     )

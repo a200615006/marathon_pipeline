@@ -34,7 +34,7 @@ class RagTool:
 
         url = RAG_URL
         try:
-            response = requests.post(url, json=function_args, timeout=30)
+            response = requests.post(url, json=function_args, timeout=120)
             # 统一判断：只要不是200状态码就认为是异常
             if response.status_code == 200:
                 print(f"rag answer={response.json()["answer"]}")

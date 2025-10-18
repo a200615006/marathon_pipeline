@@ -361,7 +361,6 @@ class AdvancedMCPHttpToolManager:
         tool_call_count = 0
         tool_calls_info = []
 
-        print(f"\n##############################################################")
         print(f"🔍 \n开始处理查询: {question}")
 
         while tool_call_count < max_iterations:
