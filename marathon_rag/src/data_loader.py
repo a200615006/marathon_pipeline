@@ -11,8 +11,11 @@ import logging
 # 基本配置
 logging.basicConfig(level=logging.INFO)
 log = logging.info  # 或者使用 logger
+
+import docx2txt
+
 def load_single_file(file_path, file_extractor):
-    """加载单个文件。"""
+    """加载单个文件，带备用方案。"""
     try:
         ext = Path(file_path).suffix.lower()
         if ext in file_extractor:
@@ -22,8 +25,35 @@ def load_single_file(file_path, file_extractor):
             return docs
         return []
     except Exception as e:
-        log(f"加载文件 {file_path} 失败: {e}")
+        # 如果是 docx 文件，尝试备用方案
+        if Path(file_path).suffix.lower() in ['.docx', '.doc']:
+            log(f"主读取器失败 {file_path}: {e}，尝试备用方案...")
+            
+            # 备用方案1: 使用 docx2txt
+            try:
+                text = docx2txt.process(file_path)
+                if text.strip():
+                    doc = Document(text=text, metadata={"file_path": str(file_path)})
+                    log(f"使用 docx2txt 成功加载: {file_path}")
+                    return [doc]
+            except Exception as e2:
+                log(f"docx2txt 也失败: {e2}")
+            
+            # 备用方案2: 使用 python-docx
+            try:
+                from docx import Document as DocxDocument
+                doc_obj = DocxDocument(file_path)
+                text = '\n'.join([para.text for para in doc_obj.paragraphs])
+                if text.strip():
+                    doc = Document(text=text, metadata={"file_path": str(file_path)})
+                    log(f"使用 python-docx 成功加载: {file_path}")
+                    return [doc]
+            except Exception as e3:
+                log(f"python-docx 也失败: {e3}")
+        
+        log(f"加载文件 {file_path} 完全失败: {e}")
         return []
+
 
 def load_documents_parallel(documents_dir=DOCUMENTS_DIR, file_extractor=None, max_workers=4):
     """并行加载文档。"""
