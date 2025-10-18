@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def call_api_post(url,param):
     """调用HTTP接口的函数"""
     try:
-        response = requests.post(url, json=param,timeout=60)
+        response = requests.post(url, json=param,timeout=120)
 
         return {
             "url": url,
@@ -83,7 +83,7 @@ def start_http_req(params):
                 print(f"URL: {url}, 结果: {result}")
                 # 解析步骤：
                 # 1. 从result中提取content字段（JSON字符串）
-                if not result:
+                if 'content' not in result:
                     continue
                 content_str = result['content']
 
@@ -99,14 +99,14 @@ def start_http_req(params):
             except Exception as e:
                 print(f"URL: {url} 执行出错: {str(e)}")
 
-                tmp_result.append(answer)
+                tmp_result.append(e)
 
     return tmp_result
 
 
 if __name__ == "__main__":
 
-    file_path = "data/sample_A.xlsx"
+    file_path = "data/20251018_all.xlsx"
     process_num = 10
 
     api_url = "http://localhost:10002/api/exam"

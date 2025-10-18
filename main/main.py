@@ -1,17 +1,17 @@
 import time
 from contextlib import asynccontextmanager
-
 import os
-from datetime import datetime, date
-from fastapi import FastAPI, HTTPException, Query, Body
+from datetime import datetime
+from fastapi import FastAPI, HTTPException
 import uvicorn
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
 from advancedMCPHttpToolManager import AdvancedMCPHttpToolManager
-from config import MAX_MCP_CALL, EXAM_PORT, TEST_PORT, OPENAI_API_KEY, OPENAI_API_BASE, MCP_DIRECTORY, X_App_Id, \
+from config import MAX_MCP_CALL, EXAM_PORT, OPENAI_API_KEY, OPENAI_API_BASE, MCP_DIRECTORY, X_App_Id, \
     X_App_Key, MAIN_LOG_FILE
 from rag_call import RagTool
-from req_resp_obj import ToolResponse, ToolRequest, QueryResponse, UserQuery, ChoiceQuestionResponse, ChoiceQuestionRequest, QAQuestionRequest, QAQuestionResponse
+from req_resp_obj import ChoiceQuestionResponse, ChoiceQuestionRequest
 import logging
-
 
 # 配置日志
 logging.basicConfig(
@@ -21,14 +21,14 @@ logging.basicConfig(
     filemode='a'
 )
 logger = logging.getLogger(__name__)
-# 测试日志
-logger.info("=== 应用程序启动 ===")
+
+# 为 RagTool.call 创建专用线程池（限制并发数）
+rag_thread_pool = ThreadPoolExecutor(max_workers=1)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """生命周期管理器"""
-    # 启动时初始化
     global tool_manager
     tool_manager = AdvancedMCPHttpToolManager(
         api_key=OPENAI_API_KEY,
@@ -42,70 +42,59 @@ async def lifespan(app: FastAPI):
         }
     )
     print("🚀 MCP工具管理器初始化完成")
+    logger.info("=== 应用程序启动 ===")
 
-    yield  # 应用运行期间
+    yield
 
-    # 关闭时清理（如果需要）
+    # 关闭时清理
+    rag_thread_pool.shutdown(wait=True)
     print("🛑 应用关闭")
 
 
-# FastAPI 应用
 app = FastAPI(
     title="创新大赛答题 API 服务",
     description="处理选择题和问答题的 HTTP 服务",
     version="1.0.0",
-    lifespan=lifespan  # 使用 lifespan 事件处理器
+    lifespan=lifespan
 )
 
-
-def process_choice_question(question: str, content: str) -> str:
-    """
-    处理选择题
-    根据问题内容和选项分析正确答案
-    """
-
+async def process_choice_question(question: str, content: str, req_id: int) -> str:
     try:
-        result = tool_manager.process_user_query(question,  content)
+        result = tool_manager.process_user_query(question, content, req_id)
         if result.code == "1":
-            rag = RagTool.call(question, content)
-            print(f"rag_result={rag}")
-            result = rag["result"]
-            return result
+            loop = asyncio.get_event_loop()
+            rag = await loop.run_in_executor(
+                rag_thread_pool,  # 直接使用线程池控制并发
+                RagTool.call,
+                question,
+                content
+            )
+            return rag["result"]
         else:
-            print(result)
-            print(result.response)
             return result.response
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"查询处理失败: {str(e)}")
-
-
-@app.get("/")
-async def root():
-    """根端点"""
-    return {
-        "message": "MCP工具服务API - 支持本地和HTTP工具",
-        "status": "running",
-        "timestamp": datetime.now().isoformat()
-    }
-
+        logger.error(f"处理选择题时发生错误: {str(e)}")
+        raise Exception(f"查询处理失败: {str(e)}")
 
 @app.post("/api/exam", response_model=ChoiceQuestionResponse)
 async def exam(request: ChoiceQuestionRequest):
     """
-    主答题接口
-    接收问题并返回答案
+    主答题接口 - 完全异步处理
     """
+    call_start = time.time()
+
     try:
-        call_start = time.time()
-        print(f"\n###########################################################################")
         logger.info(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         logger.info(f"question: {request.question}，content: {request.content}")
 
-        print(f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
+        print(f"\n###########################################################################")
+        print(
+            f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         print(f"question: {request.question}，content: {request.content}")
 
-        answer = process_choice_question(request.question, request.content)
+        # 直接调用异步函数
+        answer = await process_choice_question(request.question, request.content, request.id)
 
         # 构建响应
         response = ChoiceQuestionResponse(
@@ -115,32 +104,53 @@ async def exam(request: ChoiceQuestionRequest):
             answer=answer
         )
 
+        cost_time = time.time() - call_start
         print(f"返回答案: {response}")
-        print(f"cost={time.time()-call_start:.2f}s")
+        print(f"cost={cost_time:.2f}s")
+        logger.info(f"请求处理完成 - ID: {request.id}, 耗时: {cost_time:.2f}s")
+
         return response
 
     except Exception as e:
-        logger.error(f"处理请求时发生错误: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"处理请求时发生错误: {str(e)}")
+        error_msg = f"处理请求时发生错误: {str(e)}"
+        logger.error(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 
-    """健康检查端点"""
-@app.get("/health")
-async def health_check():
+@app.get("/")
+async def root():
     return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "tools_loaded": len(tool_manager.tools) if tool_manager else 0
+        "message": "MCP工具服务API - 支持本地和HTTP工具",
+        "status": "running",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/concurrency-status")
+async def concurrency_status():
+    """查看当前 RagTool 并发状态"""
+    if hasattr(rag_thread_pool, '_work_queue'):
+        queue_size = rag_thread_pool._work_queue.qsize()
+        active_count = rag_thread_pool._max_workers - (
+                    rag_thread_pool._max_workers - rag_thread_pool._counter._semaphore._value)
+    else:
+        queue_size = 0
+        active_count = 0
+
+    return {
+        "max_rag_concurrent": 10,
+        "active_rag_calls": active_count,
+        "queued_rag_calls": queue_size,
+        "available_rag_slots": rag_thread_pool._max_workers - active_count
     }
 
 
 if __name__ == "__main__":
-    # 启动FastAPI服务器
     uvicorn.run(
         app,
         host="0.0.0.0",
         port=EXAM_PORT,
         log_level="info",
-        workers=1,
-        timeout_keep_alive=120  # 设置超时时间为120秒
+        workers=1,  # 可以增加worker数量来提升并发
+        timeout_keep_alive=120
     )

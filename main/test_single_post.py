@@ -8,8 +8,9 @@ def post():
             "paper": "exam",
             "id": 1,
             "category": "选择题",
-            "question": "计算7+6*(2+3)-8/2+sqrt(6)+3^2",
-            "content": "选项：\\nA) 6  \\nB) 45 \\nC) 47 \\nD) 44.45"
+            # "question": "计算7+6*(2+3)-8/2+sqrt(6)+3^2，保留2位小数"
+            "question": "12345678912的平方"
+            # "content": "选项：\\nA) 6  \\nB) 45 \\nC) 47 \\nD) 44.45"
             }
     response = requests.post(url, json=data)
     print(response.text)
@@ -22,7 +23,7 @@ def post_rag():
     # data = {"query": "汇率转换：5000日元等于多少韩元"}
     # data = {"query": "查询户号BJ001234568在2025-08的电使用量为多少度"}
     # data = {"query": "请查询机构名称为建设银行且交易类型为REFUND的最近2笔交易的交易ID和金额，以交易时间倒序排序。请通过数据查询方式获取结果，最终仅返回结果值"}
-    data = {"query": "计算7+8/2+5",
+    data = {
             "segments": "1",
             "paper": "exam",
             "id": 1,

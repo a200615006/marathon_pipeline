@@ -339,12 +339,13 @@ class AdvancedMCPHttpToolManager:
                 duration=call_duration
             )
 
-    def process_user_query(self, question: str, content: str) -> QueryResponse:
+    def process_user_query(self, question: str, content: str, req_id: int) -> QueryResponse:
         """
         处理用户查询，支持多次工具调用和多个工具
         Args:
             question: 用户查询
             content: 选项
+            req_id
         Returns: QueryResponse: 处理结果
         """
         max_iterations = self.max_iterations
@@ -361,11 +362,11 @@ class AdvancedMCPHttpToolManager:
         tool_call_count = 0
         tool_calls_info = []
 
-        print(f"🔍 \n开始处理查询: {question}")
+        print(f"🔍 \nid={req_id}开始处理查询: {question}")
 
         while tool_call_count < max_iterations:
             iteration_count += 1
-            print(f"\n🔄 第 {iteration_count} 轮处理")
+            print(f"\n🔄id={req_id} 第 {iteration_count} 轮处理")
 
             try:
                 # 准备工具列表（移除http_config）
@@ -390,7 +391,7 @@ class AdvancedMCPHttpToolManager:
                 final_reply = response_message.content
                 # 如果没有工具调用，直接返回结果
                 if not tool_calls:
-                    print(f"💬 无可用工具调用 | 模型选择直接回复 (第{iteration_count}轮)")
+                    print(f"💬id={req_id} 无可用工具调用 | 模型选择直接回复 (第{iteration_count}轮)")
 
                     # 更新对话历史
                     self.conversation_history.extend([
@@ -418,7 +419,7 @@ class AdvancedMCPHttpToolManager:
                 # 处理工具调用
                 tool_call_count += 1
 
-                print(f"🔧 (第{tool_call_count} 轮工具调用）| 模型决定调用 {len(tool_calls)} 个工具")
+                print(f"🔧id={req_id} (第{tool_call_count} 轮工具调用）| 模型决定调用 {len(tool_calls)} 个工具")
                 messages.append(response_message)
 
                 # 执行所有工具调用
