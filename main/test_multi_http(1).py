@@ -63,7 +63,7 @@ def load_test_data():
     # print(all_result)
     print(f"all cost {time.time()-start}")
 
-    with open("sample_result.json", "w", encoding="utf-8") as f:
+    with open("data/sample_result.json", "w", encoding="utf-8") as f:
         json.dump(all_result, f, indent=2, ensure_ascii=False)
 
 def start_http_req(params):
@@ -104,8 +104,9 @@ def start_http_req(params):
 
 if __name__ == "__main__":
 
-    file_path = "20251018_all.xlsx"
+    file_path = "data/20251018_all.xlsx"
     process_num = 10
+
     api_url = "http://127.0.0.1:10002/api/exam"
     load_test_data()
 
