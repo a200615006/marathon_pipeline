@@ -1,6 +1,6 @@
 name: payment_order_service
 description: 创建支付订单，需要商户号和订单号参数
-http_url: http://api.example.com:30000/api/qr/create-payment-order
+http_url:  http://127.0.0.1:20009/api/qr/create-payment-order
 http_method: GET
 parameters:
 merchantId: 商户号，必填参数
