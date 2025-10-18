@@ -55,11 +55,11 @@ def main():
     
     # 创建检索器
     log("🔧 创建检索器...")
-    bm25_retriever = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=20)
-    vector_retriever = index.as_retriever(similarity_top_k=20)
+    bm25_retriever = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=10)
+    vector_retriever = index.as_retriever(similarity_top_k=10)
     hybrid_retriever = QueryFusionRetriever(
         [vector_retriever, bm25_retriever],
-        similarity_top_k=30,
+        similarity_top_k=20,
         num_queries=1,
         mode="reciprocal_rerank",
         use_async=False,

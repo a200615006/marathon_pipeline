@@ -38,6 +38,7 @@ def load_documents_parallel(documents_dir=DOCUMENTS_DIR, file_extractor=None, ma
     all_files = []
     for ext in file_extractor.keys():
         all_files.extend(Path(documents_dir).rglob(f"*{ext}"))
+    print("所有文件数量：",len(all_files))
     documents = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(load_single_file, str(f), file_extractor): f for f in all_files}

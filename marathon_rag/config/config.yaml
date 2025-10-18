@@ -22,6 +22,6 @@ parameters:
   temperature: 0.1
   batch_size: 20
   max_length: 8192
-  if_ivfpq: 0
+  if_ivfpq: 1
   if_vllmReranker: 1
   

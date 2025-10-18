@@ -103,11 +103,11 @@ async def lifespan(app: FastAPI):
     
     # 创建检索器
     log("🔧 创建检索器...")
-    bm25_retriever = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=20)
-    vector_retriever = index.as_retriever(similarity_top_k=20)
+    bm25_retriever = BM25Retriever.from_defaults(nodes=nodes, similarity_top_k=10)
+    vector_retriever = index.as_retriever(similarity_top_k=10)
     hybrid_retriever = QueryFusionRetriever(
         [vector_retriever, bm25_retriever],
-        similarity_top_k=30,
+        similarity_top_k=20,
         num_queries=1,
         mode="reciprocal_rerank",
         use_async=False,
@@ -137,16 +137,16 @@ async def lifespan(app: FastAPI):
         retriever=split_retriever,
         response_synthesizer=response_synthesizer_QA,
         reranker=reranker,
-        keep_top_k=5,
-        use_parent_nodes=True,
+        keep_top_k=10,
+        use_parent_nodes=False,
         reorder=True
     )
     dynamic_query_engine_CHOICE = DynamicQueryEngine(
         retriever=split_retriever,
         response_synthesizer=response_synthesizer_CHOICE,
         reranker=reranker,
-        keep_top_k=5,
-        use_parent_nodes=True,
+        keep_top_k=10,
+        use_parent_nodes=False,
         reorder=True
     )
 
