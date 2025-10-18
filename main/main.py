@@ -97,7 +97,7 @@ async def exam(request: ChoiceQuestionRequest):
     """
     try:
         call_start = time.time()
-        print(f"\n##############################################################")
+        print(f"\n###########################################################################")
         logger.info(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         logger.info(f"question: {request.question}，content: {request.content}")
@@ -115,8 +115,8 @@ async def exam(request: ChoiceQuestionRequest):
             answer=answer
         )
 
-        logger.info(f"返回答案: {response}")
-        logger.info(f"cost={time.time()-call_start:.2f}s")
+        print(f"返回答案: {response}")
+        print(f"cost={time.time()-call_start:.2f}s")
         return response
 
     except Exception as e:

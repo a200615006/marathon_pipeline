@@ -83,6 +83,8 @@ def start_http_req(params):
                 print(f"URL: {url}, 结果: {result}")
                 # 解析步骤：
                 # 1. 从result中提取content字段（JSON字符串）
+                if not result:
+                    continue
                 content_str = result['content']
 
                 # 2. 将JSON字符串转换为Python字典
@@ -104,10 +106,10 @@ def start_http_req(params):
 
 if __name__ == "__main__":
 
-    file_path = "data/20251018_all.xlsx"
+    file_path = "data/sample_A.xlsx"
     process_num = 10
 
-    api_url = "http://127.0.0.1:10002/api/exam"
+    api_url = "http://localhost:10002/api/exam"
     load_test_data()
 
     # start_http_req()
