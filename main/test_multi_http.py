@@ -106,8 +106,8 @@ def start_http_req(params):
 
 if __name__ == "__main__":
 
-    file_path = "data/20251018_all.xlsx"
-    process_num = 10
+    file_path = "data/sample_nl2sql.xlsx"
+    process_num = 1
 
     api_url = "http://localhost:10002/api/exam"
     load_test_data()
