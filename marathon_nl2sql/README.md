@@ -27,7 +27,7 @@ curl -X POST http://localhost:18080/query \
 
 curl -X POST http://localhost:18080/query \
      -H "Content-Type: application/json" \
-     -d '{"query": "招商银行徐烽的联系方式是多少"}'
+     -d '{"query": "查询机构名称为石河子银行且交易类型为REFUND的最近2笔交易的交易ID和金额，以交易时间倒序排序"}'
 
 
 mysql -u root -p marathon < /root/marathon/marathon_pipeline/marathon_nl2sql/create_tables.sql
