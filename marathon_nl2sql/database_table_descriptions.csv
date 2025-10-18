@@ -2,3 +2,4 @@ Table,Description,Fields
 transaction_flow,交易流水表,"transaction_id:交易流水唯一标识,merchant_id:商户ID,institution_id:发起机构/支付机构ID,account_id:交易账户ID（付款方）,counterparty_id:对手方账户ID（收款方）,transaction_amount:交易金额，单位：元，币种为人民币,transaction_type:交易类型，如 PAYMENT, REFUND,transaction_time:交易发生时间,status:交易状态，如 SUCCESS, FAILED,remark:交易备注"
 institution_info,机构信息表,"institution_id:机构唯一标识,institution_name:机构名称,institution_type:机构类型，如 BANK, PAYMENT,license_no:金融许可证号,legal_entity:法人代表,contact_phone:联系电话,contact_email:联系邮箱,status:机构状态，如 ACTIVE,create_time:创建时间"
 merchant_info,商户信息表,"merchant_id:商户唯一标识,merchant_name:商户名称,merchant_type:商户类型，如 RETAIL, ONLINE,merchant_category:商户类别码 MCC,legal_person:法人姓名,business_license:营业执照号,settlement_account:结算账户ID,status:商户状态，如 ACTIVE,register_time:注册时间"
+account_info,账户信息表,"account_id:账户唯一标识,account_name:账户名称,account_type:账户类型，如 SETTLEMENT,bank_name:开户银行,bank_account_no:银行账号,status:账户状态，如 ACTIVE,create_time:账户开立时间"
