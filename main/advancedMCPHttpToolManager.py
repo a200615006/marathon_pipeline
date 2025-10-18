@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import requests
 import time
@@ -11,7 +12,18 @@ from calculate import CalculatorTool
 from currentDateTool import CurrentDateTool
 from nl2sql_call import Nl2sqlTool
 from req_resp_obj import ToolResponse, QueryResponse
-from config import MODEL_NAME,PROMPT_CHOICE, PROMPT_QA
+from config import MODEL_NAME, PROMPT_CHOICE, PROMPT_QA, MAIN_LOG_FILE
+
+# 配置日志
+logging.basicConfig(
+    filename=MAIN_LOG_FILE,
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filemode='a'
+)
+logger = logging.getLogger(__name__)
+# 测试日志
+logger.info("=== 应用程序启动 ===")
 
 
 class AdvancedMCPHttpToolManager:
@@ -55,7 +67,7 @@ class AdvancedMCPHttpToolManager:
         print(f"🔧 本地工具: {list(self.local_tools.keys())}")
 
         # print(f"🔧 本地工具: {json.dumps(self.local_tools.values(), indent=4, ensure_ascii=False)}")
-        print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
+        # print(f"🔧 HTTP工具: {json.dumps(self.tools, indent=4, ensure_ascii=False)}")
 
     def load_tools_from_files(self) -> List[Dict[str, Any]]:
         """从文本文件加载MCP工具描述"""
@@ -349,7 +361,8 @@ class AdvancedMCPHttpToolManager:
         tool_call_count = 0
         tool_calls_info = []
 
-        print(f"\n🔍 开始处理查询: {question}")
+        print(f"\n##############################################################")
+        print(f"🔍 \n开始处理查询: {question}")
 
         while tool_call_count < max_iterations:
             iteration_count += 1
@@ -414,7 +427,7 @@ class AdvancedMCPHttpToolManager:
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
 
-                    print(f"🛠️ 调用工具 [{function_name}]: {function_args}")
+                    print(f"🛠️ ##调用工具 [{function_name}]: {function_args}")
 
                     if function_name == "nl2sql_tool":
                         function_args = {
