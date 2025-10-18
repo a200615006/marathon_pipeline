@@ -84,11 +84,12 @@ async def exam(request: ChoiceQuestionRequest):
     call_start = time.time()
 
     try:
+        logger.info(f"\n###############################################################################")
         logger.info(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         logger.info(f"question: {request.question}，content: {request.content}")
 
-        print(f"\n###########################################################################")
+        print(f"\n###############################################################################")
         print(
             f"收到请求 - segments: {request.segments}, paper: {request.paper}, ID: {request.id}, category: {request.category}")
         print(f"question: {request.question}，content: {request.content}")
@@ -106,9 +107,10 @@ async def exam(request: ChoiceQuestionRequest):
 
         cost_time = time.time() - call_start
         print(f"返回答案: {response}")
-        print(f"cost={cost_time:.2f}s")
-        logger.info(f"请求处理完成 - ID: {request.id}, 耗时: {cost_time:.2f}s")
+        print(f"请求处理完成 - ID: {request.id}, 耗时: {cost_time:.2f}s")
 
+        logger.info(f"返回答案: {response}")
+        logger.info(f"请求处理完成 - ID: {request.id}, 耗时: {cost_time:.2f}s")
         return response
 
     except Exception as e:
@@ -123,25 +125,6 @@ async def root():
         "message": "MCP工具服务API - 支持本地和HTTP工具",
         "status": "running",
         "timestamp": datetime.now().isoformat()
-    }
-
-
-@app.get("/concurrency-status")
-async def concurrency_status():
-    """查看当前 RagTool 并发状态"""
-    if hasattr(rag_thread_pool, '_work_queue'):
-        queue_size = rag_thread_pool._work_queue.qsize()
-        active_count = rag_thread_pool._max_workers - (
-                    rag_thread_pool._max_workers - rag_thread_pool._counter._semaphore._value)
-    else:
-        queue_size = 0
-        active_count = 0
-
-    return {
-        "max_rag_concurrent": 10,
-        "active_rag_calls": active_count,
-        "queued_rag_calls": queue_size,
-        "available_rag_slots": rag_thread_pool._max_workers - active_count
     }
 
 
