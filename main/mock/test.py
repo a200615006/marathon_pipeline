@@ -16,7 +16,6 @@ def load_test_data():
     paper_list = df["paper"].tolist()
     segments_list = df["segments"].tolist()
 
-
     for i in range(len(id_list)):
         id = id_list[i]
         category = category_list[i]
@@ -26,8 +25,7 @@ def load_test_data():
         paper = paper_list[i]
         segments = segments_list[i]
 
-
-        if category=="选择题":
+        if category == "选择题":
 
             req_object = {
                 "segments": segments,
@@ -53,14 +51,14 @@ def test_credit_card_month_bill():
     url = "http://127.0.0.1:20006/api/credit-card/monthly-bill"
 
     req_object = {
-        "cardNumber": "1",
-        "month": "2025-06"}
+        "cardNumber": "621122221111",
+        "month": "2025-09"}
 
     header = {
-        "X-App-Id":"your_app_id",
-        "X-App-Key":"your_app_key"
+        "X-App-Id": "your_app_id",
+        "X-App-Key": "your_app_key"
     }
-    response = requests.get(url, params=req_object,headers=header)
+    response = requests.get(url, params=req_object, headers=header)
     # response = requests.get(url, params=req_object)
 
     # response = requests.get(url, params= params)
@@ -68,59 +66,61 @@ def test_credit_card_month_bill():
 
 
 def test_exchange_rate():
-    url = "http://127.0.0.1:20005/api/exchange-rate"
+    url = "http://127.0.0.1:20006/api/exchange-rate"
 
     req_object = {
         "fromCurrency": "JPY",
-        "toCurrency": "KRW",
+        "toCurrency": "CNY",
         "amount": "5000"
 
     }
 
     header = {
-        "X-App-Id":"your_app_id",
-        "X-App-Key":"your_app_key"
+        "X-App-Id": "your_app_id",
+        "X-App-Key": "your_app_key"
     }
-    response = requests.get(url, params=req_object,headers=header)
+    response = requests.get(url, params=req_object, headers=header)
 
     # response = requests.get(url, params=req_object)
 
     # response = requests.get(url, params= params)
     print(response.text)
+
 
 def test_user_assets():
-    url = "http://127.0.0.1:20007/api/user/assets"
+    url = "http://127.0.0.1:20006/api/user/assets"
 
     req_object = {
-        "customerId": "110101199003072845",
-        "assetType": "card"
+        "customerId": "110100002845",
+        "assetType": "household"
     }
 
     header = {
-        "X-App-Id":"your_app_id",
-        "X-App-Key":"your_app_key"
+        "X-App-Id": "your_app_id",
+        "X-App-Key": "your_app_key"
     }
-    response = requests.get(url, params=req_object,headers=header)
+    response = requests.get(url, params=req_object, headers=header)
 
     # response = requests.get(url, params=req_object)
 
     # response = requests.get(url, params= params)
     print(response.text)
 
+
 def test_utility_bill():
-    url = "http://127.0.0.1:20008/api/utility-bill/monthly-bill"
+    url = "http://127.0.0.1:20006/api/utility-bill/monthly-bill"
 
     req_object = {
-        "householdId": "BJ001234568",
-        "month": "2025-08",
-        "utilityType": "electricity"
+        "householdId": "BJ001234567",
+        "month": "2025-09",
+        "utilityType": "water"
     }
 
     header = {
-        "X-App-Id":"your_app_id",
-        "X-App-Key":"your_app_key"
+        "X-App-Id": "your_app_id",
+        "X-App-Key": "your_app_key"
     }
-    response = requests.get(url, params=req_object,headers=header)
+    response = requests.get(url, params=req_object, headers=header)
 
     # response = requests.get(url, params=req_object)
 
@@ -129,7 +129,7 @@ def test_utility_bill():
 
 
 def test_payment_order():
-    url = "http://127.0.0.1:20009/api/qr/create-payment-order"
+    url = "http://127.0.0.1:20006/api/qr/create-payment-order"
 
     req_object = {
         "merchantId": "M001047",
@@ -138,27 +138,22 @@ def test_payment_order():
     }
 
     header = {
-        "X-App-Id":"your_app_id",
-        "X-App-Key":"your_app_key"
+        "X-App-Id": "your_app_id",
+        "X-App-Key": "your_app_key"
     }
-    response = requests.get(url, params=req_object,headers=header)
+    response = requests.get(url, params=req_object, headers=header)
 
     # response = requests.get(url, params=req_object)
 
     # response = requests.get(url, params= params)
     print(response.text)
 
+
 if __name__ == "__main__":
     # 启动FastAPI服务器
-   # test_credit_card_month_bill()
-     #test_exchange_rate()
+    test_credit_card_month_bill()
+    test_exchange_rate()
 
-     #test_utility_bill()
-    #test_user_assets()
+    test_utility_bill()
+    test_user_assets()
     test_payment_order()
-
-
-
-
-
-
