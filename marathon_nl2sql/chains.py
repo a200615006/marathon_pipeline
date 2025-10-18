@@ -42,6 +42,7 @@ execute_query = QuerySQLDataBaseTool(db=db)
 # 回答prompt
 answer_prompt = PromptTemplate.from_template(
     """ 请根据以下用户问题、对应的 SQL 查询及 SQL 结果回答用户问题，且需严格遵循格式要求：
+    若查询不到结果，返回 “无结果”；
     若为统计结果或单列信息，返回字符串；
     若 SQL 结果为一行数据，返回一维python数组，类似[]；
     若 SQL 结果为多行数据，返回二维python数组，类似[[],[]]。
