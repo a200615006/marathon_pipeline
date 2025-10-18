@@ -159,6 +159,7 @@ def run_nl2sql_query(query: str) -> dict:
     result = chain.invoke({"question": query, "table_details": TABLE_DETAILS})
     overall_end = time.time()
     logger.info(f"查询处理完成，总耗时: {overall_end - overall_start:.4f} 秒")
+    logger.info(f"查询结果:{result["answer"]}, 生成的sql:{result["sql_query"]}")
     return {
         "answer": result["answer"],
         "sql_query": result["sql_query"]

@@ -15,4 +15,22 @@ python app.py
 例如:
 curl -X POST http://localhost:18080/query \
      -H "Content-Type: application/json" \
-     -d '{"query": "销量最高的产品是什么"}'
+     -d '{"query": "查询一下银联食堂10月份交易记录总和。请返回数值"}'
+
+curl -X POST http://localhost:18080/query \
+     -H "Content-Type: application/json" \
+     -d '{"query": "张杰所在的商户8月份有几笔交易。请返回数值"}'
+
+curl -X POST http://localhost:18080/query \
+     -H "Content-Type: application/json" \
+     -d '{"query": "肯德基7月份超过100的交易有几笔。请返回数值"}'
+
+curl -X POST http://localhost:18080/query \
+     -H "Content-Type: application/json" \
+     -d '{"query": "招商银行徐烽的联系方式是多少"}'
+
+
+mysql -u root -p marathon < /root/marathon/marathon_pipeline/marathon_nl2sql/create_tables.sql
+mysql -u root -p marathon < /root/marathon/marathon_pipeline/marathon_nl2sql/data.sql
+
+     
